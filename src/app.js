@@ -15,14 +15,14 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["https://roomdev.netlify.app/", "http://localhost:5173"],
+    origin: "*",
   })
 );
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://roomdev.netlify.app/", "http://localhost:5173"],
+    origin: "*",
     methods: "*",
   },
 });
