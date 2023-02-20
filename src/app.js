@@ -3,6 +3,13 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import Filter from "bad-words";
+import { genrateLocation, genrateMessage } from "./utils/genrateMessages.js";
+import {
+  addUser,
+  removeUser,
+  getUser,
+  getUsersInRooms,
+} from "./utils/users.js";
 
 const app = express();
 
@@ -11,7 +18,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173"],
     methods: "*",
   },
 });
@@ -26,30 +33,68 @@ io.on("connection", (socket) => {
   const filter = new Filter();
   console.log(`client connected ${socket.id}`);
 
-  socket.on("join", ({ username, room }) => {
-    socket.broadcast.emit("message", `welcome ${username}`);
+  socket.on("join", (users, callback) => {
+    const { error, user } = addUser({ id: socket.id, ...users });
+
+    if (error) {
+      return callback(error);
+    }
+
+    socket.join(user.room);
+    socket.emit("message", genrateMessage(`welcome ${user.username}`));
+    socket.broadcast
+      .to(user.room)
+      .emit("message", genrateMessage(`${user.username} Joined`));
+
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRooms(user.room),
+    });
+
+    callback();
   });
 
   socket.on("clienMessage", (message, callback) => {
+    const { username, room } = getUser(socket.id);
+
     if (filter.isProfane(message)) {
       return callback("bsdk badwords not allowed");
     }
 
-    io.emit("message", message);
+    socket.broadcast
+      .to(room)
+      .emit("message", genrateMessage(message), username);
 
     callback();
   });
 
   socket.on("location", (loc, callback) => {
-    socket.broadcast.emit(
-      "locMessage",
-      `https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`
-    );
+    const { username, room } = getUser(socket.id);
+
+    socket.broadcast
+      .to(room)
+      .emit(
+        "locMessage",
+        genrateLocation(
+          `https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`
+        ),
+        username
+      );
 
     callback();
   });
 
-  socket.on("disconnect", () => io.emit("message", `${socket.id} left`));
+  socket.on("disconnect", () => {
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit("message", genrateMessage(`${user.username} left`));
+
+      io.to(user.room).emit("roomData", {
+        room: user.room,
+        users: getUsersInRooms(user.room),
+      });
+    }
+  });
 });
 
 server.listen(port, () =>
