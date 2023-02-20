@@ -22,7 +22,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://roomdev.netlify.app",
+    origin: ["https://roomdev.netlify.app","http://localhost:5173"],
     methods: "*",
   },
 });
