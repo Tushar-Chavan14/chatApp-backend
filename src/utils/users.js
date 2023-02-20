@@ -44,15 +44,3 @@ export const getUser = (id) => {
 export const getUsersInRooms = (room) => {
   return users.filter((user) => user.room === room);
 };
-
-// console.log(addUser({ id: 22, username: "tushar", room: "java" }));
-// // addUser({ id: 32, username: "tushar", room: "mava" });
-// // addUser({ id: 42, username: "tusha", room: "mava" });
-// addUser({ id: 52, username: "atish", room: "mava" });
-
-console.log(users);
-
-// console.log(removeUser(22));
-// console.log(getUser(52));
-
-// // console.log(getUsersInRooms("pava"));

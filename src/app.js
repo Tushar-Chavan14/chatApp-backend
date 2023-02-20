@@ -13,7 +13,11 @@ import {
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://roomdev.netlify.app/"],
+  })
+);
 const server = http.createServer(app);
 
 const io = new Server(server, {
