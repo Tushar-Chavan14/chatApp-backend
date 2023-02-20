@@ -22,7 +22,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://roomdev.netlify.app","http://localhost:5173"],
+    origin: ["https://roomdev.netlify.app", "http://localhost:5173"],
     methods: "*",
   },
 });
@@ -35,7 +35,6 @@ app.use(express.static(publicPath));
 
 io.on("connection", (socket) => {
   const filter = new Filter();
-  console.log(`client connected ${socket.id}`);
 
   socket.on("join", (users, callback) => {
     const { error, user } = addUser({ id: socket.id, ...users });
