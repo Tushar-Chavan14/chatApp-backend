@@ -38,7 +38,9 @@ export const removeUser = (id) => {
 };
 
 export const getUser = (id) => {
-  return users.find((user) => user.id === id);
+  const user = users.find((user) => user.id === id);
+
+  return user ? user : { user: "", room: "" };
 };
 
 export const getUsersInRooms = (room) => {
